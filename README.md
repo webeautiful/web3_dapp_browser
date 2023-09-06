@@ -65,10 +65,10 @@ approve效果
 
 <table>
 <tr>
-<td valign="center"><img src="https://github.com/JamesBondMine/lj_loadding_empty/blob/main/lib/assets/images/load.png?raw=true"> 
+<td valign="center"><img src="https://github.com/JamesBondMine/web3_dapp_browser/blob/main/lib/assets/images/1.png?raw=true"> 
 </td>
-<td valign="center"><img src="https://github.com/JamesBondMine/lj_loadding_empty/blob/main/lib/assets/images/load.png?raw=true"> 
-</td>
+<!-- <td valign="center"><img src="https://github.com/JamesBondMine/lj_loadding_empty/blob/main/lib/assets/images/load.png?raw=true"> 
+</td> -->
 </tr>
 </table>
 
@@ -76,9 +76,9 @@ loaded效果
 
 <table>
 <tr>
-<td valign="center"><img src="https://github.com/JamesBondMine/lj_loadding_empty/blob/main/lib/assets/images/empty.png?raw=true"> 
+<td valign="center"><img src="https://github.com/JamesBondMine/web3_dapp_browser/blob/main/lib/assets/images/2.png?raw=true"> 
 </td>
-<td valign="center"><img src="https://github.com/JamesBondMine/lj_loadding_empty/blob/main/lib/assets/images/empty.png?raw=true"> 
-</td>
+<!-- <td valign="center"><img src="https://github.com/JamesBondMine/lj_loadding_empty/blob/main/lib/assets/images/empty.png?raw=true"> 
+</td> -->
 </tr>
 </table>
