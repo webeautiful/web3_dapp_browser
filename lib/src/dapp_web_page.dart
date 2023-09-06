@@ -2,15 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:get/get.dart';
-import 'package:wallet_uu/database/token_helper.dart';
-import 'package:wallet_uu/ui/dapp/page/dapp_net_wallet_select_page.dart';
-import 'package:wallet_uu/ui/swap/controller/swap_controller.dart';
-import 'package:wallet_uu/ui/swap/model/swap_model.dart';
-import 'package:wallet_uu/ui/swap/model/token_service.dart';
-import 'package:wallet_uu/ui/wallet/controller/token_controller.dart';
-import 'package:wallet_uu/ui/dapp/model/dapp_model.dart';
-
+import './dapp_model.dart';
+import './token_helper.dart';
 
 enum DappWebOperate {
   reload,
@@ -21,16 +14,20 @@ enum DappWebOperate {
 // ignore: must_be_immutable
 class DappWebPage extends StatefulWidget  {
 
-  DappWebPage({Key key, 
-  this.url, 
-  this.onProgressChanged, 
-  this.onConsoleMessage, 
-  this.onLoadStop, 
-  this.dappViewController, 
-  this.requestAccounts, 
-  this.selectChainName}):super(key: key);
+  DappWebPage({Key? key, 
+  this.url = "", 
+  required this.onProgressChanged, 
+  required this.onConsoleMessage, 
+  required this.onLoadStop, 
+  required this.dappViewController,
+  required this.nodeAddress,
+  required this.address,
+  required this.privateKey,
+  required this.requestAccounts, 
+  required this.selectChainName}):super(key: key);
 
-  String url ;
+  String url = "";
+  String nodeAddress = "";
 
   ValueChanged<int> onProgressChanged;
 
@@ -43,6 +40,9 @@ class DappWebPage extends StatefulWidget  {
   ValueChanged<JsCallbackModel> requestAccounts;
 
   String selectChainName;
+
+  String address = "";
+  String privateKey = "";
   
   @override
   State<StatefulWidget> createState() {
@@ -53,35 +53,23 @@ class DappWebPage extends StatefulWidget  {
 
 class DappWebPageSatae extends State<DappWebPage> {
 
-    String selectChainName;
+    String selectChainName = "";
     
     int cId = 0;
+
+    int chainId = 56;
     
-    InAppWebViewController _controllerWebView;
-  
-    // 所有链
-    List<SwapModel> smodelList = [];
+    late InAppWebViewController _controllerWebView;
 
-    // 所有钱包
-    List<SwapTokenModel> tokenList = [];
+    late String address;
 
-    // 当前钱包
-    SwapTokenModel token;
-
-    SwapModel smodel;
-
-    DappSelectModel dappSelectModel;
-
-    String address;
-
-    JsCallbackModel jsData;
+    late JsCallbackModel jsData;
 
 
     @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    selectChainName = SwapController.to.readCurrentChain();
     addlistener();
   }
 
@@ -103,13 +91,13 @@ class DappWebPageSatae extends State<DappWebPage> {
       if (widget.dappViewController.dappWebOperate == DappWebOperate.runjs) {
         try {
           // 获取当前钱包
-          final setAddress = "window.ethereum.setAddress(\"${token.address.toLowerCase()}\");";
-          address = token.address.toLowerCase();
+          final setAddress = "window.ethereum.setAddress(\"${widget.address.toLowerCase()}\");";
+          address = widget.address.toLowerCase();
           String callback =
               "window.ethereum.sendResponse(${jsData.id}, [\"$address\"])";
           await _sendCustomResponse(_controllerWebView, setAddress);
           await _sendCustomResponse(_controllerWebView, callback);
-          final initString = _addChain(int.tryParse(smodel.chainId),smodel.nodeAddress,token.address.toLowerCase(),true);
+          final initString = _addChain(chainId,widget.nodeAddress,widget.address.toLowerCase(),true);
           await _sendCustomResponse(_controllerWebView, initString);
         } catch (e) {
           debugPrint(e.toString());
@@ -132,7 +120,6 @@ class DappWebPageSatae extends State<DappWebPage> {
    *
    *   */    
   Widget _webAppContent() {
-    
     return InAppWebView(
       initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
       initialOptions: InAppWebViewGroupOptions(
@@ -155,8 +142,6 @@ class DappWebPageSatae extends State<DappWebPage> {
         _controllerWebView = webcontroller;
       },
       onLoadStop: (InAppWebViewController controller, uri) {
-        // _initWeb3(_controllerWebView, true);
-        // _dappLaunchApproveEvent();
         _initWeb3(controller, true);
         widget.onLoadStop();
         
@@ -171,11 +156,6 @@ class DappWebPageSatae extends State<DappWebPage> {
       },
       onLoadError: (c, url, code, message) {
         print("\n==========================\n加载错误:\n");
-        print(c);
-        print("错误地址: " + url.toString());
-        print("错误码: " + code.toString());
-        print("错误信息: " + message);
-        print("\n==========================\n");
       },
       onProgressChanged: (InAppWebViewController c, int i) {
         _initWeb3(c, true);
@@ -188,25 +168,25 @@ class DappWebPageSatae extends State<DappWebPage> {
 
     // 
     await _controllerWebView.injectJavascriptFileFromAsset(
-        assetFilePath: 'assets/dapp/provider.min.js');
+        assetFilePath: 'packages/web3_dapp_browser/assets/js/provider.min.js');
 
-    if (dappSelectModel != null) {
-      token = dappSelectModel.swapTokenModel;
-      smodel = dappSelectModel.swapModel;
-    } else {
-      smodelList = await SwapController.to.loadTokenListData();
-      smodel = smodelList.firstWhereOrNull(
-          (element) => element.chainName == selectChainName);
-    }
+    // if (dappSelectModel != null) {
+    //   // token = dappSelectModel.swapTokenModel;
+    //   // smodel = dappSelectModel.swapModel;
+    // } else {
+    //   // smodelList = await SwapController.to.loadTokenListData();
+    //   // smodel = smodelList.firstWhereOrNull(
+    //   //     (element) => element.chainName == selectChainName);
+    // }
 
-     // 当前钱包
-        tokenList =
-            await SwapController.to.getChainWalletList(widget.selectChainName);
-        token = tokenList.first;
+    //  // 当前钱包
+    //     tokenList =
+    //         await SwapController.to.getChainWalletList(widget.selectChainName);
+    //     token = tokenList.first;
 
     String initJs = reInit
-        ? _loadReInt(int.tryParse(smodel.chainId), smodel.nodeAddress, token.address.toLowerCase())
-        : _loadInitJs(int.tryParse(smodel.chainId), smodel.nodeAddress);
+        ? _loadReInt(chainId, widget.nodeAddress, widget.address.toLowerCase())
+        : _loadInitJs(chainId, widget.nodeAddress);
     await _controllerWebView.evaluateJavascript(source: initJs);
     if (controller.javaScriptHandlersMap["OrangeHandler"] != null) {
       return;
@@ -228,7 +208,7 @@ class DappWebPageSatae extends State<DappWebPage> {
                 {
                   try {
                     JsDataModel data = JsDataModel.fromJson(jsData.object ?? {});
-                    var signedData = await TokenHelper.signPersonalMessage(token.privateKey, data.data);
+                    var signedData = await TokenHelper.signPersonalMessage(widget.privateKey, data.data);
                      _sendResult(controller, "ethereum", signedData, jsData.id ?? 0);
                   } catch (e) {
                     print(e);
@@ -247,12 +227,9 @@ class DappWebPageSatae extends State<DappWebPage> {
               }
              case "switchEthereumChain":{
               try {
-                  final data = JsAddEthereumChain.fromJson(jsData.object ?? {});
-                  int chainId = int.tryParse(data.chainId);
-                  smodel = smodelList.firstWhereOrNull((element) => element.chainId == chainId.toString());
-                  _sendResult(controller, "ethereum", smodel.nodeAddress, jsData.id ?? 0);
+                  _sendResult(controller, "ethereum", widget.nodeAddress, jsData.id ?? 0);
                   //
-                  final initString = _addChain(chainId,smodel.nodeAddress, address, false);
+                  final initString = _addChain(chainId,widget.nodeAddress, address, false);
                   _sendCustomResponse(controller, initString);
                   } catch (e) {
                      print(e);
@@ -354,11 +331,11 @@ class DappWebPageSatae extends State<DappWebPage> {
 class DappWebController extends ChangeNotifier {
   /// Creates a page controller.
 
-  DappWebController({this.dappWebOperate = DappWebOperate.goback}): assert(dappWebOperate != null);
+  DappWebController({this.dappWebOperate = DappWebOperate.goback});
   // 请求web的方法
-  DappWebOperate dappWebOperate;
+  DappWebOperate dappWebOperate = DappWebOperate.reload;
 
-  String runjsUrl;
+  String runjsUrl = "";
 
 
   void reload() async {

@@ -8,16 +8,21 @@ environment:
   sdk: '>=2.19.2 <3.0.0'
 
 dependencies:
+  # 浏览器组件
+  flutter_inappwebview: ^5.7.1
+  # 分享
+  share_plus: ^2.1.4
+
+  web3dart: ^2.6.1
+
+  encrypt: ^5.0.1
+
   flutter:
       sdk: flutter
 
 dev_dependencies:
   lints: ^2.0.0
   test: ^1.21.0
-  # 浏览器组件
-  flutter_inappwebview: ^5.4.3+4
-  # 分享
-  share_plus: ^2.1.4
 
 
 flutter:

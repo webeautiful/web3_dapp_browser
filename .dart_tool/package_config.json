@@ -20,6 +20,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "asn1lib",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/asn1lib-1.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "async",
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/async-2.11.0",
       "packageUri": "lib/",
@@ -32,10 +38,22 @@
       "languageVersion": "2.17"
     },
     {
-      "name": "collection",
-      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/collection-1.18.0",
+      "name": "characters",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/characters-1.2.1",
       "packageUri": "lib/",
-      "languageVersion": "2.18"
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "clock",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/clock-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "collection",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/collection-1.17.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "convert",
@@ -56,10 +74,46 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "eip1559",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/eip1559-0.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "eip55",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/eip55-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "encrypt",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/encrypt-5.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "file",
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/file-6.1.4",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter",
+      "rootUri": "file:///Users/niulujia/flutter/packages/flutter",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "flutter_inappwebview",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/flutter_inappwebview-5.7.2+3",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
+    },
+    {
+      "name": "flutter_web_plugins",
+      "rootUri": "file:///Users/niulujia/flutter/packages/flutter_web_plugins",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "frontend_server_client",
@@ -70,6 +124,12 @@
     {
       "name": "glob",
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/glob-2.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "http",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/http-0.13.6",
       "packageUri": "lib/",
       "languageVersion": "2.19"
     },
@@ -93,9 +153,15 @@
     },
     {
       "name": "js",
-      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/js-0.6.7",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/js-0.6.5",
       "packageUri": "lib/",
-      "languageVersion": "2.19"
+      "languageVersion": "2.16"
+    },
+    {
+      "name": "json_rpc_2",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/json_rpc_2-3.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "lints",
@@ -116,8 +182,14 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "material_color_utilities",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/material_color_utilities-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.13"
+    },
+    {
       "name": "meta",
-      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/meta-1.9.1",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/meta-1.8.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -146,6 +218,18 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "plugin_platform_interface",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.6",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "pointycastle",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/pointycastle-3.7.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
+    },
+    {
       "name": "pool",
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/pool-1.5.1",
       "packageUri": "lib/",
@@ -156,6 +240,48 @@
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/pub_semver-2.1.4",
       "packageUri": "lib/",
       "languageVersion": "2.17"
+    },
+    {
+      "name": "sec",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/sec-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/share_plus-2.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus_linux",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/share_plus_linux-2.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus_macos",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/share_plus_macos-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus_platform_interface",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/share_plus_platform_interface-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus_web",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/share_plus_web-2.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus_windows",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/share_plus_windows-2.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "shelf",
@@ -180,6 +306,12 @@
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/shelf_web_socket-1.0.4",
       "packageUri": "lib/",
       "languageVersion": "2.17"
+    },
+    {
+      "name": "sky_engine",
+      "rootUri": "file:///Users/niulujia/flutter/bin/cache/pkg/sky_engine",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "source_map_stack_trace",
@@ -210,6 +342,12 @@
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/stream_channel-2.1.2",
       "packageUri": "lib/",
       "languageVersion": "2.19"
+    },
+    {
+      "name": "stream_transform",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/stream_transform-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
     },
     {
       "name": "string_scanner",
@@ -248,16 +386,88 @@
       "languageVersion": "2.17"
     },
     {
+      "name": "url_launcher",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher-6.1.11",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "url_launcher_android",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_android-6.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "url_launcher_ios",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_ios-6.1.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "url_launcher_linux",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_linux-3.0.6",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "url_launcher_macos",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_macos-3.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "url_launcher_platform_interface",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_platform_interface-2.1.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "url_launcher_web",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_web-2.0.19",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "url_launcher_windows",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/url_launcher_windows-3.0.8",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "uuid",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/uuid-3.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "vector_math",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/vector_math-2.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
+    },
+    {
       "name": "vm_service",
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/vm_service-11.10.0",
       "packageUri": "lib/",
       "languageVersion": "2.19"
     },
     {
+      "name": "wallet",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/wallet-0.0.12+1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "watcher",
       "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/watcher-1.0.2",
       "packageUri": "lib/",
       "languageVersion": "2.14"
+    },
+    {
+      "name": "web3dart",
+      "rootUri": "file:///Users/niulujia/.pub-cache/hosted/pub.dev/web3dart-2.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "web_socket_channel",
@@ -284,7 +494,7 @@
       "languageVersion": "2.19"
     }
   ],
-  "generated": "2023-09-05T05:26:06.932192Z",
+  "generated": "2023-09-06T09:28:37.281463Z",
   "generator": "pub",
   "generatorVersion": "2.19.2"
 }

@@ -11,11 +11,11 @@
 import 'dart:convert';
 
 class DappNameModel {
-  String en_US_name;
-  String zh_CN_name;
+  String en_US_name = "";
+  String zh_CN_name = "";
 
-  String en_US_desc;
-  String zh_CN_desc;
+  String en_US_desc = "";
+  String zh_CN_desc = "";
 
 
   DappNameModel();
@@ -45,7 +45,7 @@ class DappNameModel {
 }
 
 class DappModel {
-  String id;
+  String id = "";
   String name = "";
   String icon = "";
   String nameLang = "";
@@ -59,8 +59,8 @@ class DappModel {
 
   bool isSelected = false;
 
-  DappNameModel nameModel;
-  DappNameModel descModel;
+  DappNameModel nameModel = DappNameModel();
+  DappNameModel descModel = DappNameModel();
 
   DappModel();
 
@@ -188,7 +188,7 @@ class MainNetworkModel {
 }
 
 class DappTokenModel {
-  String id;
+  String id = "";
   String name = "";
   String icon = "";
   String nameLang = "";
@@ -229,12 +229,12 @@ class DappTokenModel {
 
 
 class JsCallbackModel {
-  int id;
-  String name;
-  Map<String, dynamic> object;
-  String network;
+  int id = 0;
+  String name = "";
+  Map<String, dynamic> object = {};
+  String network = "";
 
-  JsCallbackModel({this.id, this.name, this.object, this.network});
+  JsCallbackModel({this.id = 0, this.name= "", required this.object, this.network = ""});
 
   JsCallbackModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -254,9 +254,9 @@ class JsCallbackModel {
 }
 
 class JsDataModel {
-  String data;
+  String data = "";
 
-  JsDataModel({this.data});
+  JsDataModel({this.data = ""});
 
   JsDataModel.fromJson(Map<String, dynamic> json) {
     data = json['data'];
@@ -270,9 +270,9 @@ class JsDataModel {
 }
 
 class JsAddEthereumChain {
-  String chainId;
+  String chainId = "";
 
-  JsAddEthereumChain({this.chainId});
+  JsAddEthereumChain({this.chainId =""});
 
   JsAddEthereumChain.fromJson(Map<String, dynamic> json) {
     chainId = json['chainId'];
@@ -286,13 +286,13 @@ class JsAddEthereumChain {
 }
 
 class JsTransactionObject {
-  String gas;
-  String value;
-  String from;
-  String to;
-  String data;
+  String gas = "";
+  String value = "";
+  String from = "";
+  String to = "";
+  String data = "";
 
-  JsTransactionObject({this.gas, this.value, this.from, this.to, this.data});
+  JsTransactionObject({this.gas = "", this.value = "", this.from = "", this.to = "", this.data = ""});
 
   JsTransactionObject.fromJson(Map<String, dynamic> json) {
     gas = json['gas'];
