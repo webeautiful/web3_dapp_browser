@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -68,7 +67,6 @@ class DappWebPageSatae extends State<DappWebPage> {
 
     @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     addlistener();
   }
@@ -112,13 +110,7 @@ class DappWebPageSatae extends State<DappWebPage> {
     return _webAppContent();
   }
   
-  /**
-   * 
-   * dapp浏览器
-   * 目前仅支持: 登录、个人签名登录  切换链
-   * 可用flutter_injected_web3: ^1.0.1插件代替
-   *
-   *   */    
+  
   Widget _webAppContent() {
     return InAppWebView(
       initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
@@ -200,16 +192,16 @@ class DappWebPageSatae extends State<DappWebPage> {
             debugPrint("callBack1: $callback");
             switch (jsData.name) {
               case "signTransaction":{
-                final data = JsTransactionObject.fromJson(jsData.object ?? {});
-                _sendResult(controller, "ethereum", "signedData", jsData.id ?? 0);
+                // final data = JsTransactionObject.fromJson(jsData.object ?? {});
+                _sendResult(controller, "ethereum", "signedData", jsData.id);
                 break;
               }
               case "signPersonalMessage":
                 {
                   try {
-                    JsDataModel data = JsDataModel.fromJson(jsData.object ?? {});
+                    JsDataModel data = JsDataModel.fromJson(jsData.object);
                     var signedData = await TokenHelper.signPersonalMessage(widget.privateKey, data.data);
-                     _sendResult(controller, "ethereum", signedData, jsData.id ?? 0);
+                     _sendResult(controller, "ethereum", signedData, jsData.id);
                   } catch (e) {
                     print(e);
                   }
@@ -227,7 +219,7 @@ class DappWebPageSatae extends State<DappWebPage> {
               }
              case "switchEthereumChain":{
               try {
-                  _sendResult(controller, "ethereum", widget.nodeAddress, jsData.id ?? 0);
+                  _sendResult(controller, "ethereum", widget.nodeAddress, jsData.id);
                   //
                   final initString = _addChain(chainId,widget.nodeAddress, address, false);
                   _sendCustomResponse(controller, initString);

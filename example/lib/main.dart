@@ -70,11 +70,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     selectChainName: "ETH")),
           ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
