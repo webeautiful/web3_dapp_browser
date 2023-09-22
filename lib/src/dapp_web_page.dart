@@ -1,8 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import './dapp_model.dart';
 import './token_helper.dart';
+import './dapp_approve_view.dart';
+import 'dapp_model.dart';
 
 enum DappWebOperate {
   reload,
@@ -14,18 +15,31 @@ enum DappWebOperate {
 class DappWebPage extends StatefulWidget  {
 
   DappWebPage({Key? key, 
+  // dapp地址
   this.url = "", 
+  // dapp 加载进度
   required this.onProgressChanged, 
+  // 消息
   required this.onConsoleMessage, 
+  // onLoadStop
   required this.onLoadStop, 
+  // Controller
   required this.dappViewController,
+  // nodeAddress- 节点地址
   required this.nodeAddress,
+  // 账户地址
   required this.address,
+  // 私钥
   required this.privateKey,
+  // dapp模型用于在授权时展示
+  required this.dappModel,
+  // 授权登录的方法
   required this.requestAccounts, 
+  // selectChainName
   required this.selectChainName}):super(key: key);
 
   String url = "";
+
   String nodeAddress = "";
 
   ValueChanged<int> onProgressChanged;
@@ -41,7 +55,10 @@ class DappWebPage extends StatefulWidget  {
   String selectChainName;
 
   String address = "";
+
   String privateKey = "";
+
+  DappModel dappModel;
   
   @override
   State<StatefulWidget> createState() {
@@ -112,8 +129,9 @@ class DappWebPageSatae extends State<DappWebPage> {
   
   
   Widget _webAppContent() {
+    Uri requestUri = Uri.parse(widget.url);
     return InAppWebView(
-      initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
+      initialUrlRequest: URLRequest(url: requestUri),
       initialOptions: InAppWebViewGroupOptions(
         crossPlatform: InAppWebViewOptions(
           useShouldOverrideUrlLoading: true, //加载url拦截功能
@@ -147,7 +165,7 @@ class DappWebPageSatae extends State<DappWebPage> {
         _initWeb3(c, false);
       },
       onLoadError: (c, url, code, message) {
-        print("\n==========================\n加载错误:\n");
+        print("网页在进行打印ERROR: ${message}");
       },
       onProgressChanged: (InAppWebViewController c, int i) {
         _initWeb3(c, true);
@@ -162,20 +180,6 @@ class DappWebPageSatae extends State<DappWebPage> {
     await _controllerWebView.injectJavascriptFileFromAsset(
         assetFilePath: 'packages/web3_dapp_browser/assets/js/provider.min.js');
 
-    // if (dappSelectModel != null) {
-    //   // token = dappSelectModel.swapTokenModel;
-    //   // smodel = dappSelectModel.swapModel;
-    // } else {
-    //   // smodelList = await SwapController.to.loadTokenListData();
-    //   // smodel = smodelList.firstWhereOrNull(
-    //   //     (element) => element.chainName == selectChainName);
-    // }
-
-    //  // 当前钱包
-    //     tokenList =
-    //         await SwapController.to.getChainWalletList(widget.selectChainName);
-    //     token = tokenList.first;
-
     String initJs = reInit
         ? _loadReInt(chainId, widget.nodeAddress, widget.address.toLowerCase())
         : _loadInitJs(chainId, widget.nodeAddress);
@@ -183,16 +187,13 @@ class DappWebPageSatae extends State<DappWebPage> {
     if (controller.javaScriptHandlersMap["OrangeHandler"] != null) {
       return;
     }
-    // return;
      _controllerWebView.addJavaScriptHandler(
           handlerName: "OrangeHandler",
           callback: (callback) async {
             jsData = JsCallbackModel.fromJson(callback[0]);
-
             debugPrint("callBack1: $callback");
             switch (jsData.name) {
               case "signTransaction":{
-                // final data = JsTransactionObject.fromJson(jsData.object ?? {});
                 _sendResult(controller, "ethereum", "signedData", jsData.id);
                 break;
               }
@@ -214,7 +215,11 @@ class DappWebPageSatae extends State<DappWebPage> {
                 break;
               }
               case "requestAccounts":{
-                widget.requestAccounts(jsData);
+                showScreenView(context, 390, DappApproveView(dappdismiss: (value) {
+                  if (value==1) {
+                    widget.requestAccounts(jsData);
+                  }
+                }, model: widget.dappModel));
                 break;
               }
              case "switchEthereumChain":{
@@ -316,6 +321,64 @@ class DappWebPageSatae extends State<DappWebPage> {
         ''';
     return source;
   }
+
+
+  // 减号
+  Widget _dismissView(
+    BuildContext context,
+  ) {
+    return InkWell(
+      child: Container(
+        height: 34,
+        padding: const EdgeInsets.only(bottom: 0),
+        alignment: Alignment.center,
+        child: Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEEEEE),
+            borderRadius: const BorderRadius.all(Radius.circular(2)),
+        ),
+        ),
+      ),
+      onTap: () {
+        Navigator.pop(context);
+      },
+    );
+  }
+
+
+  Future showScreenView(BuildContext context, double height, Widget child,
+      {double radius = 12.0, bool autoDismiss = false, String title = "", bool isScrollControlled = true}) async {
+    return await showModalBottomSheet<Null>(
+        context: context,
+        enableDrag: false,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(radius),
+            topRight: Radius.circular(radius),
+          ),
+        ),
+        elevation: 20,
+        builder: (BuildContext context) {
+          return SizedBox(
+                height: height,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    autoDismiss ? _dismissView(context) : Container(),
+                    title.isEmpty ? Container() : Text(title,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16, color: const Color(0xFF333333), fontWeight: FontWeight.w600),),
+                    Expanded(child: child)
+                  ],
+                ),
+            );
+  });
+      }
+
 }
 
 

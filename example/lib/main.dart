@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:web3_dapp_browser/web3_dapp_browser.dart';
 
+
 void main() {
   runApp(const MyApp());
 }
@@ -11,11 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'web3_dapp_browser',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'web3_dapp_browser'),
     );
   }
 }
@@ -29,26 +30,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
   late DappWebController _dappwebController;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
     _dappwebController = DappWebController();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    
+    DappModel dapp = DappModel("https://img2.baidu.com/it/u=4094580296,2373583296&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500", "BSC");
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -60,14 +53,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: DappWebPage(
                     dappViewController: _dappwebController,
                     onProgressChanged: (progress) {},
-                    onConsoleMessage: (log) {},
+                    onConsoleMessage: (log) {
+                      // print(log);
+                    },
                     onLoadStop: () {},
-                    address: "https://blur.io",
-                    url: "https://blur.io",
-                    privateKey: "",
+                    address: "0xc9e90f88932827c32065a5e0ddbf077e01cfa1ac",
+                    // url: "https://blur.io",
+                    url: "https://uniswap.org",
+                    privateKey: "4fa2ce0741a6b031eb67abb8855a965c2dc3be2a9febc3c9bde3bc1841d39481",
                     nodeAddress: "",
-                    requestAccounts: (data) {},
-                    selectChainName: "ETH")),
+                    dappModel: dapp,
+                    requestAccounts: (data) {
+                      _dappwebController.requestAccounts();
+                    },
+                    selectChainName: "BSC")),
           ],
       ),
     );

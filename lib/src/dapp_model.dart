@@ -46,3 +46,38 @@ class JsDataModel {
     return data;
   }
 }
+
+
+class DappModel {
+
+  String id = "";
+  String icon = "";
+  String nameLang = "";
+
+  DappModel(imageUrl,name){
+    icon = imageUrl;
+    nameLang = name;
+  }
+
+  DappModel.fromJson(dynamic jsonStr) {
+    if (jsonStr == null || jsonStr == {}) {
+      return;
+    }
+    if (jsonStr["data"] != null) {
+      jsonStr = jsonStr["data"];
+    }
+    id = jsonStr["id"].toString();
+    icon = jsonStr["icon"] ?? "";
+    nameLang = jsonStr["nameLang"] ?? "";
+
+  }
+
+  Map toJson() {
+    Map map = Map();
+    map["id"] = id;
+    map["icon"] = icon;
+    map["nameLang"] = nameLang;
+
+    return map;
+  }
+}

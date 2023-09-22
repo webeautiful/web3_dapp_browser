@@ -7,4 +7,6 @@ export 'src/web3_dapp_browser_base.dart';
 
 export 'src/dapp_web_page.dart';
 
+export 'src/dapp_model.dart';
+
 // TODO: Export any libraries intended for clients of this package.
