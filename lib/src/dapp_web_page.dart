@@ -38,6 +38,11 @@ class DappWebPage extends StatefulWidget  {
   // selectChainName
   required this.selectChainName}):super(key: key);
 
+
+
+
+  
+
   String url = "";
 
   String nodeAddress = "";
@@ -165,7 +170,7 @@ class DappWebPageSatae extends State<DappWebPage> {
         _initWeb3(c, false);
       },
       onLoadError: (c, url, code, message) {
-        print("网页在进行打印ERROR: ${message}");
+        print("网页在进行打印ERROR: $message");
       },
       onProgressChanged: (InAppWebViewController c, int i) {
         _initWeb3(c, true);
