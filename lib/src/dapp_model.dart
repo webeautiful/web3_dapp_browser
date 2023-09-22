@@ -6,19 +6,33 @@
  */
 
 
+class JsCallbackObjectModel {
+
+  int chainId = 0x1;
+
+  JsCallbackObjectModel.fromJson(Map<String, dynamic> json) {
+    if(!json['chainId']) return;
+    final cId = int.tryParse(json['chainId'].toString());
+    chainId = cId!;
+  }
+}
+
+
+
 class JsCallbackModel {
+
   int id = 0;
   String name = "";
   Map<String, dynamic> object = {};
   String network = "";
-
-  // JsCallbackModel({this.id = 0, this.name= "", required this.object, this.network = ""});
+  late JsCallbackObjectModel objModel;
 
   JsCallbackModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     object = json['object'];
     network = json['network'];
+    objModel = JsCallbackObjectModel.fromJson(object);
   }
 
   Map<String, dynamic> toJson() {
@@ -72,12 +86,12 @@ class DappModel {
 
   }
 
-  Map toJson() {
-    Map map = Map();
-    map["id"] = id;
-    map["icon"] = icon;
-    map["nameLang"] = nameLang;
+  // Map toJson() {
+  //   Map map = Map();
+  //   map["id"] = id;
+  //   map["icon"] = icon;
+  //   map["nameLang"] = nameLang;
 
-    return map;
-  }
+  //   return map;
+  // }
 }

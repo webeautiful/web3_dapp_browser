@@ -33,15 +33,10 @@ class DappWebPage extends StatefulWidget  {
   required this.privateKey,
   // dapp模型用于在授权时展示
   required this.dappModel,
-  // 授权登录的方法
-  required this.requestAccounts, 
   // selectChainName
   required this.selectChainName}):super(key: key);
 
 
-
-
-  
 
   String url = "";
 
@@ -54,8 +49,6 @@ class DappWebPage extends StatefulWidget  {
   DappWebController dappViewController;
 
   VoidCallback onLoadStop;
-
-  ValueChanged<JsCallbackModel> requestAccounts;
 
   String selectChainName;
 
@@ -118,6 +111,8 @@ class DappWebPageSatae extends State<DappWebPage> {
           await _sendCustomResponse(_controllerWebView, setAddress);
           await _sendCustomResponse(_controllerWebView, callback);
           final initString = _addChain(chainId,widget.nodeAddress,widget.address.toLowerCase(),true);
+
+          print("授权登录: $initString");
           await _sendCustomResponse(_controllerWebView, initString);
         } catch (e) {
           debugPrint(e.toString());
@@ -222,20 +217,21 @@ class DappWebPageSatae extends State<DappWebPage> {
               case "requestAccounts":{
                 showScreenView(context, 390, DappApproveView(dappdismiss: (value) {
                   if (value==1) {
-                    widget.requestAccounts(jsData);
+                    widget.dappViewController.requestAccounts(chainId);
+
                   }
                 }, model: widget.dappModel));
                 break;
               }
              case "switchEthereumChain":{
               try {
-                  _sendResult(controller, "ethereum", widget.nodeAddress, jsData.id);
-                  //
-                  final initString = _addChain(chainId,widget.nodeAddress, address, false);
+                  _sendResult(controller, "ethereum", "https://rpc.ankr.com/eth", jsData.id);
+                  chainId = jsData.objModel.chainId;
+                  final initString = _addChain(jsData.objModel.chainId,"https://rpc.ankr.com/eth", address, false);
                   _sendCustomResponse(controller, initString);
-                  } catch (e) {
-                     print(e);
-                  }
+              } catch (e) {
+                  print(e);
+              }
                   break;
              }
             }
@@ -243,8 +239,7 @@ class DappWebPageSatae extends State<DappWebPage> {
   }
 
   String _addChain(int chainId, String rpcUrl, String address, bool isDebug) {
-    String source = '''
-        window.ethereum.setNetwork({
+    String source = '''window.ethereum.setNetwork({
           ethereum:{
             chainId: $chainId,
             rpcUrl: "$rpcUrl",
@@ -355,7 +350,7 @@ class DappWebPageSatae extends State<DappWebPage> {
 
   Future showScreenView(BuildContext context, double height, Widget child,
       {double radius = 12.0, bool autoDismiss = false, String title = "", bool isScrollControlled = true}) async {
-    return await showModalBottomSheet<Null>(
+    return await showModalBottomSheet<void>(
         context: context,
         enableDrag: false,
         shape: RoundedRectangleBorder(
@@ -397,6 +392,8 @@ class DappWebController extends ChangeNotifier {
 
   String runjsUrl = "";
 
+  int cid = 56;
+
 
   void reload() async {
     dappWebOperate = DappWebOperate.reload;
@@ -408,7 +405,8 @@ class DappWebController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void requestAccounts() async {
+  void requestAccounts(int chainId) async {
+    cid = chainId;
     dappWebOperate = DappWebOperate.runjs;
     notifyListeners();
   }

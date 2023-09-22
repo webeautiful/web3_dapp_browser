@@ -5,7 +5,7 @@ web3_dapp_browser support dapp load
 ## Getting Started
 
 ```dart
-web3_dapp_browser: ^1.0.1
+web3_dapp_browser: ^1.0.2
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ web3_dapp_browser 具体实现
 late DappWebController _dappwebController;
 
 // dapp对象
-DappModel dapp = DappModel("https://img2.baidu.com/it/u=4094580296,2373583296&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500", "BSC");
+DappModel dapp = DappModel("https://0xzx.com/wp-content/uploads/2021/05/20210530-19.jpg", "UniSwap");
 
 
 ```
@@ -53,15 +53,11 @@ return Scaffold(
                       // print(log);
                     },
                     onLoadStop: () {},
-                    address: "0xc9e90f889***********e01cfa1ac",
-                    // url: "https://blur.io",
+                    address: "0xc9e90f8893*************",
                     url: "https://uniswap.org",
-                    privateKey: "4fa2ce0741a6b031eb************1841d39481",
-                    nodeAddress: "",
+                    privateKey: "4fa2ce0741a6b031eb67abb885***********",
+                    nodeAddress: "https://rpc.ankr.com/bsc",
                     dappModel: dapp,
-                    requestAccounts: (data) {
-                      _dappwebController.requestAccounts();
-                    },
                     selectChainName: "BSC")),
           ],
       ),

@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     
-    DappModel dapp = DappModel("https://img2.baidu.com/it/u=4094580296,2373583296&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500", "BSC");
+    DappModel dapp = DappModel("https://0xzx.com/wp-content/uploads/2021/05/20210530-19.jpg", "UniSwap");
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -57,15 +57,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       // print(log);
                     },
                     onLoadStop: () {},
-                    address: "0xc9e90f88932827c32065a5e0ddbf077e01cfa1ac",
-                    // url: "https://blur.io",
+                    address: "0x******************a1ac",
                     url: "https://uniswap.org",
-                    privateKey: "4fa2ce0741a6b031eb67abb8855a965c2dc3be2a9febc3c9bde3bc1841d39481",
-                    nodeAddress: "",
+                    privateKey: "4fa2ce0741a6b0**************************9bde3bc1841d39481",
+                    nodeAddress: "https://rpc.ankr.com/bsc",
                     dappModel: dapp,
-                    requestAccounts: (data) {
-                      _dappwebController.requestAccounts();
-                    },
                     selectChainName: "BSC")),
           ],
       ),
