@@ -9,7 +9,7 @@ web3_dapp_browser can load dapp url
 ## Getting started
 
 ```dart
-web3_dapp_browser: ^1.0.0
+web3_dapp_browser: ^1.0.1
 ```
 
 ## Usage
