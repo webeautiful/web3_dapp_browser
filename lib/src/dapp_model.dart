@@ -1,26 +1,21 @@
 /*
- * @Author: nlj 
- * @Date: 2023-01-07 10:09:02 
+ * @Author: nlj
+ * @Date: 2023-01-07 10:09:02
  * @Last Modified by: nlj
  * @Last Modified time: 2023-09-06 18:19:26
  */
 
-
 class JsCallbackObjectModel {
-
   int chainId = 0x1;
 
   JsCallbackObjectModel.fromJson(Map<String, dynamic> json) {
-    if(!json['chainId']) return;
+    if (json['chainId'] == null) return;
     final cId = int.tryParse(json['chainId'].toString());
     chainId = cId!;
   }
 }
 
-
-
 class JsCallbackModel {
-
   int id = 0;
   String name = "";
   Map<String, dynamic> object = {};
@@ -61,14 +56,12 @@ class JsDataModel {
   }
 }
 
-
 class DappModel {
-
   String id = "";
   String icon = "";
   String nameLang = "";
 
-  DappModel(imageUrl,name){
+  DappModel(imageUrl, name) {
     icon = imageUrl;
     nameLang = name;
   }
@@ -83,7 +76,6 @@ class DappModel {
     id = jsonStr["id"].toString();
     icon = jsonStr["icon"] ?? "";
     nameLang = jsonStr["nameLang"] ?? "";
-
   }
 
   // Map toJson() {
