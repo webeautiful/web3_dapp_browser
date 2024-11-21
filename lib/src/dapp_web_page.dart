@@ -158,7 +158,7 @@ class DappWebPageSatae extends State<DappWebPage> {
         widget.onProgressChanged(i);
       },
       shouldInterceptRequest: (controller, request) async {
-        if (request.url?.scheme == "http") {
+        if (request.url.scheme == "http") {
           print("Intercepted insecure HTTP request: ${request.url}");
           // 可选择拦截或跳转到 HTTPS
         }
@@ -191,11 +191,6 @@ class DappWebPageSatae extends State<DappWebPage> {
     String initJs = reInit
         ? _loadReInt(chainId, widget.nodeAddress, widget.address.toLowerCase())
         : _loadInitJs(chainId, widget.nodeAddress);
-    String testSource = """
-            (function() {
-              document.body.style.backgroundColor = 'white';
-            })()
-          """;
     await _controllerWebView.evaluateJavascript(source: initJs);
     if (controller.hasJavaScriptHandler(handlerName: _scriptHandlerName)) {
       return;
@@ -481,6 +476,7 @@ class DappWebPageSatae extends State<DappWebPage> {
     return source;
   }
 
+  // ignore: unused_element
   String _loadInitJsForAndroid(int chainId, String rpcUrl) {
     String source = """
         (function() {

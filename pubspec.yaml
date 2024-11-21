@@ -1,19 +1,16 @@
 name: web3_dapp_browser
 description: dapp browser.
 version: 1.0.2
-# repository: https://github.com/my_org/my_repo
-homepage: https://github.com/JamesBondMine/web3_dapp_browser
+homepage: https://github.com/webeautiful/web3_dapp_browser
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=3.4.1 <4.0.0'
 
 dependencies:
   # 浏览器组件
   flutter_inappwebview: ^6.1.5
 
-  web3dart: ^2.6.1
-
-  encrypt: ^5.0.1
+  web3dart: ^2.7.3
 
   flutter:
       sdk: flutter
