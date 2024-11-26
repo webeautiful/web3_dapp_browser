@@ -1,9 +1,14 @@
 /*
- * @Author: nlj
- * @Date: 2023-01-07 10:09:02
- * @Last Modified by: nlj
- * @Last Modified time: 2023-09-06 18:19:26
+ * @Author: Albert
+ * @Date: 2024-11-25 09:51:00
+ * @Last Modified by: Albert
+ * @Last Modified time: 2024-11-25 09:51:00
  */
+
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:web3_dapp_browser/src/dapp_method.dart';
 
 class JsCallbackObjectModel {
   int chainId = 0x1;
@@ -37,6 +42,30 @@ class JsCallbackModel {
     data['object'] = object;
     data['network'] = network;
     return data;
+  }
+
+  // -------------------------
+  // JSON Extraction Helpers
+  // -------------------------
+
+  DAppMethod? extractMethod(Map<String, dynamic> json) {
+    final method = json['method'] as String?;
+    return DAppMethod.values.firstWhere(
+      (e) => e.name == method,
+    );
+  }
+
+  Uint8List? extractMessage(Map<String, dynamic> json) {
+    final message = json['data'] as String?;
+    return message != null ? base64Decode(message) : null;
+  }
+
+  int? extractEthereumChainId(Map<String, dynamic> json) {
+    return json['chainId'] as int?;
+  }
+
+  String? extractRaw(Map<String, dynamic> json) {
+    return json['raw'] as String?;
   }
 }
 

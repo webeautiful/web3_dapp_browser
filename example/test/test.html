@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flutter web3 app</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/eruda/3.2.1/eruda.min.js"></script>
+  <script>eruda.init();</script>
+</head>
+<body>
+  <h3 id="title"></h3>
+  hello
+</body>
+<script>
+  window.onload = function() {
+    // ethereum.request({ method: 'requestAccounts' })
+    console.log('window.trustwallet', window.ethereum)
+    // window.flutter_inappwebview.callHandler('OrangeHandler', {id: 0, name: 'signMessage', object: { chainId: 56 }, network: 'BSC'})
+
+    // window.ethereum = trustwallet.ethereum
+    // console.log('window.trustwallet', ethereum({
+    //   rpc: 'https://bsc-dataseed1.binance.org',
+    //   chainId: '56'
+    // }))
+  }
+</script>
+</html>

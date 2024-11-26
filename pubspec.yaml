@@ -7,9 +7,7 @@ environment:
   sdk: '>=3.4.1 <4.0.0'
 
 dependencies:
-  # 浏览器组件
   flutter_inappwebview: ^6.1.5
-
   web3dart: ^2.7.3
 
   flutter:
@@ -23,8 +21,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - packages/web3_dapp_browser/assets/js/provider.min.js
-    - packages/web3_dapp_browser/assets/js/eruda-3.2.1.min.js
-    - packages/web3_dapp_browser/assets/js/test.js
-    - packages/web3_dapp_browser/assets/js/ios-web3-provider.min.js
     - packages/web3_dapp_browser/assets/js/android-web3-provider.min.js
+    - packages/web3_dapp_browser/assets/js/ios-web3-provider.min.js
+    - packages/web3_dapp_browser/assets/js/custom.js

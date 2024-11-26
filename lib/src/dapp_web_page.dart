@@ -1,41 +1,44 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:web3_dapp_browser/src/dapp_method.dart';
+import 'package:web3_dapp_browser/src/provider_network.dart';
+import 'package:web3_dapp_browser/src/trust_web3_provider.dart';
+import 'package:web3_dapp_browser/src/webview_extension.dart';
 import './token_helper.dart';
 import './dapp_approve_view.dart';
 import 'dapp_model.dart';
-import 'dart:io';
+import 'package:crypto/crypto.dart';
 
 enum DappWebOperate { reload, goback, runjs }
 
 // ignore: must_be_immutable
 class DappWebPage extends StatefulWidget {
-  DappWebPage(
-      {Key? key,
-      // dapp地址
-      this.url = "",
-      // dapp 加载进度
-      required this.onProgressChanged,
-      // 消息
-      required this.onConsoleMessage,
-      // onLoadStop
-      required this.onLoadStop,
-      // Controller
-      required this.dappViewController,
-      // nodeAddress- 节点地址
-      required this.nodeAddress,
-      // 账户地址
-      required this.address,
-      // 私钥
-      required this.privateKey,
-      // dapp模型用于在授权时展示
-      required this.dappModel,
-      // selectChainName
-      required this.selectChainName})
-      : super(key: key);
+  DappWebPage({
+    Key? key,
+    // dapp地址
+    this.url = "",
+    // dapp 加载进度
+    required this.onProgressChanged,
+    // 消息
+    required this.onConsoleMessage,
+    // onLoadStop
+    required this.onLoadStop,
+    // Controller
+    required this.dappViewController,
+    // 私钥
+    required this.privateKey,
+    // dapp模型用于在授权时展示
+    required this.dappModel,
+    // selectChainName
+    required this.selectChainName,
+    required this.config,
+  }) : super(key: key);
 
   String url = "";
-
-  String nodeAddress = "";
 
   ValueChanged<int> onProgressChanged;
 
@@ -50,6 +53,7 @@ class DappWebPage extends StatefulWidget {
   String address = "";
 
   String privateKey = "";
+  Config config;
 
   DappModel dappModel;
 
@@ -60,16 +64,13 @@ class DappWebPage extends StatefulWidget {
 }
 
 class DappWebPageSatae extends State<DappWebPage> {
+  late TrustWeb3Provider _provider;
+
   String selectChainName = "";
-
-  int cId = 0;
-
-  int chainId = 56;
-
-  static final _scriptHandlerName = '_tw_';
 
   late InAppWebViewController _controllerWebView;
 
+  int chainId = 56;
   late String address;
 
   late JsCallbackModel jsData;
@@ -77,38 +78,36 @@ class DappWebPageSatae extends State<DappWebPage> {
   @override
   void initState() {
     super.initState();
+    _provider = TrustWeb3Provider(config: widget.config);
+    address = widget.config.ethereum.address.toLowerCase();
+    chainId = widget.config.ethereum.chainId;
     addlistener();
   }
 
   // 监听
   addlistener() {
     widget.dappViewController.addListener(() async {
-      // ignore: unrelated_type_equality_checks
       if (widget.dappViewController.dappWebOperate == DappWebOperate.reload) {
         _controllerWebView.reload();
       }
 
-      // ignore: unrelated_type_equality_checks
       if (widget.dappViewController.dappWebOperate == DappWebOperate.goback) {
         _controllerWebView.goBack();
       }
 
-      // ignore: unrelated_type_equality_checks
       if (widget.dappViewController.dappWebOperate == DappWebOperate.runjs) {
         try {
-          // 获取当前钱包
-          final setAddress =
-              "window.ethereum.setAddress(\"${widget.address.toLowerCase()}\");";
-          address = widget.address.toLowerCase();
-          String callback =
-              "window.ethereum.sendResponse(${jsData.id}, [\"$address\"])";
-          await _sendCustomResponse(_controllerWebView, setAddress);
-          await _sendCustomResponse(_controllerWebView, callback);
-          final initString = _addChain(
-              chainId, widget.nodeAddress, widget.address.toLowerCase(), true);
-
-          print("授权登录: $initString");
-          await _sendCustomResponse(_controllerWebView, initString);
+          // fetch current wallet
+          final network = ProviderNetworkExtension.fromString(jsData.network);
+          await _controllerWebView.tw.set(network, address);
+          await _controllerWebView.tw
+              .sendArrayResponse(network, [address], jsData.id);
+          await _controllerWebView.tw.setConfig(
+            Config(
+              ethereum: widget.config.ethereum,
+            ),
+          );
+          print("授权登录");
         } catch (e) {
           debugPrint(e.toString());
         }
@@ -168,127 +167,73 @@ class DappWebPageSatae extends State<DappWebPage> {
   }
 
   _initWeb3(InAppWebViewController controller, bool reInit) async {
-    //
-    // await _controllerWebView.injectJavascriptFileFromAsset(
-    //     assetFilePath:
-    //         'packages/web3_dapp_browser/assets/js/eruda-3.2.1.min.js');
+    // inject provider
     await _controllerWebView.injectJavascriptFileFromAsset(
-        assetFilePath: 'packages/web3_dapp_browser/assets/js/test.js');
-    // await _controllerWebView.injectJavascriptFileFromAsset(
-    //     assetFilePath: 'packages/web3_dapp_browser/assets/js/provider.min.js');
-
-    late String web3ProviderAsset;
-    if (Platform.isIOS) {
-      web3ProviderAsset =
-          'packages/web3_dapp_browser/assets/js/ios-web3-provider.min.js';
-    } else {
-      web3ProviderAsset =
-          'packages/web3_dapp_browser/assets/js/android-web3-provider.min.js';
-    }
+        assetFilePath: _provider.providerJsAsset());
+    // await _controllerWebView.addUserScript(
+    //     userScript: await _provider.providerScript);
     await _controllerWebView.injectJavascriptFileFromAsset(
-        assetFilePath: web3ProviderAsset);
+        assetFilePath: 'packages/web3_dapp_browser/assets/js/custom.js');
 
-    String initJs = reInit
-        ? _loadReInt(chainId, widget.nodeAddress, widget.address.toLowerCase())
-        : _loadInitJs(chainId, widget.nodeAddress);
-    await _controllerWebView.evaluateJavascript(source: initJs);
-    if (controller.hasJavaScriptHandler(handlerName: _scriptHandlerName)) {
+    // String initJs = reInit
+    //     ? _loadReInt(chainId, widget.config.ethereum.rpcUrl,
+    //         widget.address.toLowerCase())
+    //     : _loadInitJs(chainId, widget.config.ethereum.rpcUrl);
+    await _controllerWebView.evaluateJavascript(
+        source: _provider.injectScript.source);
+    // await _controllerWebView.addUserScript(userScript: _provider.injectScript);
+    if (controller.hasJavaScriptHandler(
+        handlerName: _provider.scriptHandlerName)) {
       return;
     }
     _controllerWebView.addJavaScriptHandler(
-        handlerName: _scriptHandlerName,
-        callback: (callback) async {
-          jsData = JsCallbackModel.fromJson(callback[0]);
-          debugPrint("callBack1: $callback");
-          switch (jsData.name) {
-            case "signTransaction":
-              {
-                _sendResult(controller, "ethereum", "signedData", jsData.id);
+        handlerName: _provider.scriptHandlerName,
+        callback: (args) async {
+          debugPrint("callBack1: $args");
+          if (args.isNotEmpty && args[0] is Map<String, dynamic>) {
+            final json = args[0] as Map<String, dynamic>;
+            jsData = JsCallbackModel.fromJson(json);
+            final method = extractMethod(json);
+            switch (method) {
+              case DAppMethod.signRawTransaction:
+                handleSignRawTransaction(json);
                 break;
-              }
-            case "signPersonalMessage":
-              {
-                try {
-                  JsDataModel data = JsDataModel.fromJson(jsData.object);
-                  var signedData = await TokenHelper.signPersonalMessage(
-                      widget.privateKey, data.data);
-                  _sendResult(controller, "ethereum", signedData, jsData.id);
-                } catch (e) {
-                  print(e);
-                }
+              case DAppMethod.signTransaction:
+                handleSignTransaction(jsData);
                 break;
-              }
-            case "signMessage":
-              {
+              case DAppMethod.signMessage:
+                handleSignMessage(json);
                 break;
-              }
-            case "signTypedMessage":
-              {
+              case DAppMethod.signTypedMessage:
+                handleSignTypedMessage(json);
                 break;
-              }
-            case "requestAccounts":
-              {
-                showScreenView(
-                    context,
-                    390,
-                    DappApproveView(
-                        dappdismiss: (value) {
-                          if (value == 1) {
-                            widget.dappViewController.requestAccounts(chainId);
-                          }
-                        },
-                        model: widget.dappModel));
+              case DAppMethod.signPersonalMessage:
+                await handleSignPersonalMessage(json);
                 break;
-              }
-            case "switchEthereumChain":
-              {
-                try {
-                  _sendResult(controller, "ethereum",
-                      "https://rpc.ankr.com/eth", jsData.id);
-                  chainId = jsData.objModel.chainId;
-                  final initString = _addChain(jsData.objModel.chainId,
-                      "https://rpc.ankr.com/eth", address, false);
-                  _sendCustomResponse(controller, initString);
-                } catch (e) {
-                  print(e);
-                }
+              case DAppMethod.sendTransaction:
+                handleSendTransaction(json);
                 break;
-              }
-          }
-        });
-  }
-
-  String _addChain(int chainId, String rpcUrl, String address, bool isDebug) {
-    // String source = '''window.ethereum.setNetwork({
-    String source = '''window.ethereum.setConfig({
-          ethereum:{
-            chainId: $chainId,
-            rpcUrl: "$rpcUrl",
-            address: "$address",
-            isDebug: $isDebug
+              case DAppMethod.ecRecover:
+                handleEcRecover(json);
+                break;
+              case DAppMethod.requestAccounts:
+                handleRequestAccounts(json);
+                break;
+              case DAppMethod.watchAsset:
+                handleWatchAsset(json);
+                break;
+              case DAppMethod.addEthereumChain:
+                handleAddEthereumChain(json);
+                break;
+              case DAppMethod.switchEthereumChain:
+              case DAppMethod.switchChain:
+                handleSwitchChain(jsData);
+                break;
+              default:
+                print('Unhandled method: $method');
             }
           }
-        )
-        ''';
-    return source;
-  }
-
-  Future<void> _sendResult(InAppWebViewController controller, String network,
-      String message, int methodId) {
-    String script = "window.$network.sendResponse($methodId, \"$message\")";
-    debugPrint(script);
-    return controller
-        .evaluateJavascript(source: script)
-        .then((value) => debugPrint(value))
-        .onError((error, stackTrace) => debugPrint(error.toString()));
-  }
-
-  Future<void> _sendCustomResponse(
-      InAppWebViewController controller, String response) {
-    return controller
-        .evaluateJavascript(source: response)
-        .then((value) => debugPrint(value))
-        .onError((error, stackTrace) => debugPrint(error.toString()));
+        });
   }
 
   String _loadInitJsForIOS(int chainId, String rpcUrl, String address) {
@@ -322,7 +267,7 @@ class DappWebPageSatae extends State<DappWebPage> {
                     }
                     if(window.flutter_inappwebview.callHandler) {
                       // @params - eg. {id: 0, name: 'signMessage', object: { chainId: 56 }, network: 'BSC'}
-                      window.flutter_inappwebview.callHandler('$_scriptHandlerName', params)
+                      window.flutter_inappwebview.callHandler('_tw_', params)
                     }
                 });
 
@@ -447,7 +392,6 @@ class DappWebPageSatae extends State<DappWebPage> {
                 });
 
                 window.trustwallet = proxy;
-                window.trustWallet = proxy;
 
                 const EIP6963Icon =
                 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTgiIGhlaWdodD0iNjUiIHZpZXdCb3g9IjAgMCA1OCA2NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgOS4zODk0OUwyOC44OTA3IDBWNjUuMDA0MkM4LjI1NDUgNTYuMzM2OSAwIDM5LjcyNDggMCAzMC4zMzUzVjkuMzg5NDlaIiBmaWxsPSIjMDUwMEZGIi8+CjxwYXRoIGQ9Ik01Ny43ODIyIDkuMzg5NDlMMjguODkxNSAwVjY1LjAwNDJDNDkuNTI3NyA1Ni4zMzY5IDU3Ljc4MjIgMzkuNzI0OCA1Ny43ODIyIDMwLjMzNTNWOS4zODk0OVoiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8yMjAxXzY5NDIpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMjIwMV82OTQyIiB4MT0iNTEuMzYxNSIgeTE9Ii00LjE1MjkzIiB4Mj0iMjkuNTM4NCIgeTI9IjY0LjUxNDciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwLjAyMTEyIiBzdG9wLWNvbG9yPSIjMDAwMEZGIi8+CjxzdG9wIG9mZnNldD0iMC4wNzYyNDIzIiBzdG9wLWNvbG9yPSIjMDA5NEZGIi8+CjxzdG9wIG9mZnNldD0iMC4xNjMwODkiIHN0b3AtY29sb3I9IiM0OEZGOTEiLz4KPHN0b3Agb2Zmc2V0PSIwLjQyMDA0OSIgc3RvcC1jb2xvcj0iIzAwOTRGRiIvPgo8c3RvcCBvZmZzZXQ9IjAuNjgyODg2IiBzdG9wLWNvbG9yPSIjMDAzOEZGIi8+CjxzdG9wIG9mZnNldD0iMC45MDI0NjUiIHN0b3AtY29sb3I9IiMwNTAwRkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K';
@@ -494,7 +438,7 @@ class DappWebPageSatae extends State<DappWebPage> {
             // trustwallet.solana = new trustwallet.SolanaProvider(config);
             trustwallet.postMessage = (json) => {
                 // @json - eg. {id: 0, name: 'signMessage', object: { chainId: 56 }, network: 'BSC'}
-                window.flutter_inappwebview.callHandler('$_scriptHandlerName', json)
+                window.flutter_inappwebview.callHandler('_tw_', json)
             }
             window.ethereum = trustwallet.ethereum;
         })();
@@ -548,11 +492,15 @@ class DappWebPageSatae extends State<DappWebPage> {
     );
   }
 
-  Future showScreenView(BuildContext context, double height, Widget child,
-      {double radius = 12.0,
-      bool autoDismiss = false,
-      String title = "",
-      bool isScrollControlled = true}) async {
+  Future showScreenView(
+    BuildContext context,
+    double height,
+    Widget child, {
+    double radius = 12.0,
+    bool autoDismiss = false,
+    String title = "",
+    bool isScrollControlled = true,
+  }) async {
     return await showModalBottomSheet<void>(
         context: context,
         enableDrag: false,
@@ -588,18 +536,170 @@ class DappWebPageSatae extends State<DappWebPage> {
           );
         });
   }
+
+  // -------------------------
+  // DApp Method Handlers
+  // -------------------------
+
+  void handleSignRawTransaction(Map<String, dynamic> json) {
+    print('Handling signRawTransaction: $json');
+    // Add implementation
+  }
+
+  void handleSignTransaction(JsCallbackModel jsData) {
+    // _sendResult(controller, "ethereum", "signedData", jsData.id);
+    _controllerWebView.tw
+        .sendResponse(ProviderNetwork.ethereum, 'signedData', jsData.id);
+  }
+
+  void handleSignMessage(Map<String, dynamic> json) {
+    final data = extractMessage(json);
+    if (data != null) {
+      final signedData = signMessage(data);
+      print('Signed Message: $signedData');
+    }
+  }
+
+  void handleSignTypedMessage(Map<String, dynamic> json) {
+    print('Handling signTypedMessage: $json');
+    // Add implementation
+  }
+
+  Future<void> handleSignPersonalMessage(Map<String, dynamic> json) async {
+    try {
+      JsDataModel data = JsDataModel.fromJson(jsData.object);
+      var signedData =
+          await TokenHelper.signPersonalMessage(widget.privateKey, data.data);
+      // _sendResult(controller, "ethereum", signedData, jsData.id);
+      _controllerWebView.tw
+          .sendResponse(ProviderNetwork.ethereum, signedData, jsData.id);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void handleSendTransaction(Map<String, dynamic> json) {
+    print('Handling sendTransaction: $json');
+    // Add implementation
+  }
+
+  void handleEcRecover(Map<String, dynamic> json) {
+    print('Handling ecRecover: $json');
+    // Add implementation
+  }
+
+  void handleRequestAccounts(Map<String, dynamic> json) {
+    showScreenView(
+        context,
+        390,
+        DappApproveView(
+          dappdismiss: (value) {
+            if (value == 1) {
+              widget.dappViewController.requestAccounts();
+            }
+          },
+          model: widget.dappModel,
+        ));
+  }
+
+  void handleWatchAsset(Map<String, dynamic> json) {
+    print('Handling watchAsset: $json');
+    // Add implementation
+  }
+
+  void handleAddEthereumChain(Map<String, dynamic> json) {
+    print('Handling addEthereumChain: $json');
+    // Add implementation
+  }
+
+  void handleSwitchChain(JsCallbackModel jsData) {
+    try {
+      _controllerWebView.tw.sendResponse(
+          ProviderNetwork.ethereum, 'https://rpc.ankr.com/eth', jsData.id);
+      // final initString = _addChain(jsData.objModel.chainId,
+      //     "https://rpc.ankr.com/eth", address, false);
+      // _sendCustomResponse(controller, initString);
+      _controllerWebView.tw.setConfig(
+        Config(
+          ethereum: EthereumConfig(
+            address: address,
+            chainId: jsData.objModel.chainId,
+            rpcUrl: 'https://rpc.ankr.com/eth',
+          ),
+        ),
+      );
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // -------------------------
+  // JSON Extraction Helpers
+  // -------------------------
+
+  DAppMethod? extractMethod(Map<String, dynamic> json) {
+    final method = json['name'] as String?;
+    return DAppMethod.values.firstWhere(
+      (e) => e.name == method,
+    );
+  }
+
+  ProviderNetwork extractNetwork(Map<String, dynamic> json) {
+    final network = json['network'] as String?;
+    return ProviderNetworkExtension.fromString(network);
+  }
+
+  Uint8List? extractMessage(Map<String, dynamic> json) {
+    final message = json['data'] as String?;
+    return message != null ? base64Decode(message) : null;
+  }
+
+  int? extractEthereumChainId(Map<String, dynamic> json) {
+    return json['chainId'] as int?;
+  }
+
+  String? extractRaw(Map<String, dynamic> json) {
+    return json['raw'] as String?;
+  }
+
+  // Add more JSON extraction helpers as needed...
+
+  // -------------------------
+  // Utility Methods
+  // -------------------------
+
+  Uint8List signMessage(Uint8List data, {bool addPrefix = true}) {
+    if (addPrefix) {
+      final prefix =
+          utf8.encode("\u{19}Ethereum Signed Message:\n${data.length}");
+      data = Uint8List.fromList(prefix + data);
+    }
+    final hash = sha256.convert(data).bytes;
+    // Here, implement your signing logic (e.g., using a private key)
+    return Uint8List.fromList(hash);
+  }
+
+  String? ecRecover(Uint8List signature, Uint8List message) {
+    // Implement ECDSA recovery logic
+    return null;
+  }
+
+  // -------------------------
+  // Alert Helper
+  // -------------------------
+
+  void alert({required String title, required String message}) {
+    print('ALERT: $title - $message');
+  }
 }
 
 class DappWebController extends ChangeNotifier {
   /// Creates a page controller.
 
   DappWebController({this.dappWebOperate = DappWebOperate.goback});
-  // 请求web的方法
+  // request web method
   DappWebOperate dappWebOperate = DappWebOperate.reload;
-
-  String runjsUrl = "";
-
-  int cid = 56;
+  late ProviderNetwork network;
 
   void reload() async {
     dappWebOperate = DappWebOperate.reload;
@@ -611,8 +711,7 @@ class DappWebController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void requestAccounts(int chainId) async {
-    cid = chainId;
+  void requestAccounts() async {
     dappWebOperate = DappWebOperate.runjs;
     notifyListeners();
   }
