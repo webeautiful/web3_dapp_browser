@@ -12,7 +12,7 @@ class TokenHelper {
       String result = bytesToHex(message, include0x: true);
       return result;
     } catch (e) {
-      return "aa";
+      return "";
     }
   }
 

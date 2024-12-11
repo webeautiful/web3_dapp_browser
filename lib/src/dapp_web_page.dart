@@ -16,21 +16,22 @@ enum DappWebOperate { reload, goback, runjs }
 
 // ignore: must_be_immutable
 class DappWebPage extends StatefulWidget {
-  DappWebPage({
-    Key? key,
-    // dapp地址
-    this.url = "",
-    // dapp 加载进度
-    required this.onProgressChanged,
-    // 消息
-    required this.onConsoleMessage,
-    // onLoadStop
-    required this.onLoadStop,
-    // Controller
-    required this.dappViewController,
-    required this.onSignPermit,
-    required this.config,
-  }) : super(key: key);
+  DappWebPage(
+      {Key? key,
+      // dapp地址
+      this.url = "",
+      // dapp 加载进度
+      required this.onProgressChanged,
+      // 消息
+      required this.onConsoleMessage,
+      // onLoadStop
+      required this.onLoadStop,
+      // Controller
+      required this.dappViewController,
+      required this.onSignPermit,
+      required this.config,
+      required this.providers})
+      : super(key: key);
 
   String url = "";
 
@@ -46,6 +47,7 @@ class DappWebPage extends StatefulWidget {
 
   Future<String> Function() onSignPermit;
   Config config;
+  Map<int, TrustWeb3Provider> providers;
 
   @override
   State<StatefulWidget> createState() {
@@ -360,13 +362,12 @@ class DappWebPageSatae extends State<DappWebPage> {
         390,
         DappApproveView(
           dappdismiss: (value) async {
+            final network = ProviderNetworkExtension.fromString(jsData.network);
             if (value == 1) {
               // widget.dappViewController.requestAccounts();
               try {
                 // fetch current wallet
                 if (_provider.useOldVersion) {
-                  final network =
-                      ProviderNetworkExtension.fromString(jsData.network);
                   await _controllerWebView.tw.set(network, address);
                   await _controllerWebView.tw
                       .sendArrayResponse(network, [address], jsData.id);
@@ -376,8 +377,6 @@ class DappWebPageSatae extends State<DappWebPage> {
                     ),
                   );
                 } else {
-                  final network =
-                      ProviderNetworkExtension.fromString(jsData.network);
                   await _controllerWebView.tw.set(network, address);
                   await _controllerWebView.tw
                       .sendArrayResponse(network, [address], jsData.id);
@@ -386,6 +385,9 @@ class DappWebPageSatae extends State<DappWebPage> {
               } catch (e) {
                 debugPrint(e.toString());
               }
+            } else {
+              _controllerWebView.tw
+                  .sendError(network, 'Request Canceled!', jsData.id);
             }
           },
           model: dappModel,
@@ -403,23 +405,19 @@ class DappWebPageSatae extends State<DappWebPage> {
   }
 
   void handleSwitchChain(JsCallbackModel jsData) {
-    try {
-      _controllerWebView.tw.sendResponse(
-          ProviderNetwork.ethereum, 'https://rpc.ankr.com/eth', jsData.id);
-      // final initString = _addChain(jsData.objModel.chainId,
-      //     "https://rpc.ankr.com/eth", address, false);
-      // _sendCustomResponse(controller, initString);
-      _controllerWebView.tw.setConfig(
-        Config(
-          ethereum: EthereumConfig(
-            address: address,
-            chainId: jsData.objModel.chainId,
-            rpcUrl: 'https://rpc.ankr.com/eth',
-          ),
-        ),
-      );
-    } catch (e) {
-      print(e);
+    var chainID = jsData.objModel.chainId;
+    var network = ProviderNetworkExtension.fromString(jsData.network);
+    if (widget.providers[chainID] == null) {
+      _controllerWebView.tw.sendError(network, '不支持该网络', jsData.id);
+      return;
+    }
+    var current = widget.providers[chainID]!;
+    _controllerWebView.tw
+        .sendResponse(network, current.config.ethereum.rpcUrl, jsData.id);
+    if (_provider.useOldVersion) {
+      _controllerWebView.tw.setOldConfig(current.config);
+    } else {
+      _controllerWebView.tw.setConfig(current.config);
     }
   }
 

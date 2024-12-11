@@ -27,10 +27,9 @@ extension WebViewFunctions on TypeWrapper<InAppWebViewController> {
     final script = """
     var config = {
         ethereum: {
-            address: "${config.ethereum.address}",
             chainId: ${config.ethereum.chainId},
             rpcUrl: "${config.ethereum.rpcUrl}",
-            isDebug: true,
+            isDebug: false,
         }
     };
     window.ethereum.setNetwork(config);

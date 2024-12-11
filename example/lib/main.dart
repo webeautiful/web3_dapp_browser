@@ -34,6 +34,7 @@ class DappBrowserView extends StatefulWidget {
 class _DappBrowserState extends State<DappBrowserView> {
   late DappWebController _dappwebController;
   late final List<EthereumConfig> ethereumConfigs;
+  late final Map<int, TrustWeb3Provider> providers;
   DappModel dapp = DappModel(
       'https://0xzx.com/wp-content/uploads/2021/05/20210530-19.jpg', 'Init');
 
@@ -58,7 +59,7 @@ class _DappBrowserState extends State<DappBrowserView> {
         rpcUrl: 'https://ethereum-rpc.publicnode.com',
       )
     ];
-    Map<int, TrustWeb3Provider> providers = {
+    providers = {
       for (var config in ethereumConfigs)
         config.chainId: TrustWeb3Provider(config: Config(ethereum: config)),
     };
@@ -85,8 +86,9 @@ class _DappBrowserState extends State<DappBrowserView> {
               // url: 'https://app.pandatitan.com/#/',
               dappViewController: _dappwebController,
               config: Config(
-                ethereum: ethereumConfigs[1],
+                ethereum: ethereumConfigs[0],
               ),
+              providers: providers,
               onSignPermit: () async {
                 const privateKey =
                     'a404cb9eedb4985df6a21c156a5ca4e19ab3580fefbaf64c4a26da46c2df1df8';
