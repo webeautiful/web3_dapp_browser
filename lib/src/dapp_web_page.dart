@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -29,12 +28,7 @@ class DappWebPage extends StatefulWidget {
     required this.onLoadStop,
     // Controller
     required this.dappViewController,
-    // 私钥
-    required this.privateKey,
-    // dapp模型用于在授权时展示
-    required this.dappModel,
-    // selectChainName
-    required this.selectChainName,
+    required this.onSignPermit,
     required this.config,
   }) : super(key: key);
 
@@ -48,14 +42,10 @@ class DappWebPage extends StatefulWidget {
 
   VoidCallback onLoadStop;
 
-  String selectChainName;
-
   String address = "";
 
-  String privateKey = "";
+  Future<String> Function() onSignPermit;
   Config config;
-
-  DappModel dappModel;
 
   @override
   State<StatefulWidget> createState() {
@@ -66,19 +56,20 @@ class DappWebPage extends StatefulWidget {
 class DappWebPageSatae extends State<DappWebPage> {
   late TrustWeb3Provider _provider;
 
-  String selectChainName = "";
-
   late InAppWebViewController _controllerWebView;
 
-  int chainId = 56;
+  int chainId = 0;
   late String address;
 
   late JsCallbackModel jsData;
 
+  late DappModel dappModel = DappModel(
+      'https://0xzx.com/wp-content/uploads/2021/05/20210530-19.jpg', 'Init');
+
   @override
   void initState() {
     super.initState();
-    _provider = TrustWeb3Provider(config: widget.config);
+    _provider = TrustWeb3Provider(config: widget.config, useOldVersion: true);
     address = widget.config.ethereum.address.toLowerCase();
     chainId = widget.config.ethereum.chainId;
     addlistener();
@@ -95,23 +86,7 @@ class DappWebPageSatae extends State<DappWebPage> {
         _controllerWebView.goBack();
       }
 
-      if (widget.dappViewController.dappWebOperate == DappWebOperate.runjs) {
-        try {
-          // fetch current wallet
-          final network = ProviderNetworkExtension.fromString(jsData.network);
-          await _controllerWebView.tw.set(network, address);
-          await _controllerWebView.tw
-              .sendArrayResponse(network, [address], jsData.id);
-          await _controllerWebView.tw.setConfig(
-            Config(
-              ethereum: widget.config.ethereum,
-            ),
-          );
-          print("授权登录");
-        } catch (e) {
-          debugPrint(e.toString());
-        }
-      }
+      if (widget.dappViewController.dappWebOperate == DappWebOperate.runjs) {}
     });
   }
 
@@ -137,7 +112,29 @@ class DappWebPageSatae extends State<DappWebPage> {
       onWebViewCreated: (InAppWebViewController webcontroller) {
         _controllerWebView = webcontroller;
       },
-      onLoadStop: (InAppWebViewController controller, uri) {
+      onLoadStop: (InAppWebViewController controller, url) async {
+        if (url == null) return;
+        // String baseUrl = url.origin;
+        // 获取 favicon 的相对路径
+        // String? relativeIconPath =
+        //     await controller.evaluateJavascript(source: """
+        //       (() => {
+        //         let icon = document.querySelector("link[rel*='icon']");
+        //         return icon ? icon.getAttribute('href') : null;
+        //       })();
+        //       """);
+        // 解析为绝对路径
+        // String? absoluteIconUrl;
+        // if (relativeIconPath != null) {
+        //   absoluteIconUrl =
+        //       Uri.parse(baseUrl).resolve(relativeIconPath).toString();
+        // }
+        // final faviconUrl = absoluteIconUrl ??
+        //     'https://0xzx.com/wp-content/uploads/2021/05/20210530-19.jpg';
+        // 更新页面标题
+        // String? title = await controller.evaluateJavascript(
+        //     source: "document.querySelector('title')?.innerText");
+        // dappModel = DappModel(faviconUrl, title);
         _initWeb3(controller, true);
         widget.onLoadStop();
       },
@@ -172,15 +169,13 @@ class DappWebPageSatae extends State<DappWebPage> {
         assetFilePath: _provider.providerJsAsset());
     // await _controllerWebView.addUserScript(
     //     userScript: await _provider.providerScript);
-    await _controllerWebView.injectJavascriptFileFromAsset(
-        assetFilePath: 'packages/web3_dapp_browser/assets/js/custom.js');
+    // await _controllerWebView.injectJavascriptFileFromAsset(
+    //     assetFilePath: 'packages/web3_dapp_browser/assets/js/custom.js');
 
-    // String initJs = reInit
-    //     ? _loadReInt(chainId, widget.config.ethereum.rpcUrl,
-    //         widget.address.toLowerCase())
-    //     : _loadInitJs(chainId, widget.config.ethereum.rpcUrl);
-    await _controllerWebView.evaluateJavascript(
+    // Future.delayed(Duration(seconds: 1), () {
+    _controllerWebView.evaluateJavascript(
         source: _provider.injectScript.source);
+    // });
     // await _controllerWebView.addUserScript(userScript: _provider.injectScript);
     if (controller.hasJavaScriptHandler(
         handlerName: _provider.scriptHandlerName)) {
@@ -217,7 +212,7 @@ class DappWebPageSatae extends State<DappWebPage> {
                 handleEcRecover(json);
                 break;
               case DAppMethod.requestAccounts:
-                handleRequestAccounts(json);
+                handleRequestAccounts(jsData);
                 break;
               case DAppMethod.watchAsset:
                 handleWatchAsset(json);
@@ -234,238 +229,6 @@ class DappWebPageSatae extends State<DappWebPage> {
             }
           }
         });
-  }
-
-  String _loadInitJsForIOS(int chainId, String rpcUrl, String address) {
-    String source = """
-        (function() {
-            const config = {
-                ethereum: {
-                    address: "$address",
-                    chainId: $chainId,
-                    rpcUrl: "$rpcUrl"
-                },
-                // solana: {
-                //     cluster: "config.solana.cluster",
-                //     // @todo: remove this when mobile supports versioned transactions
-                //     useLegacySign: true
-                // },
-                // aptos: {
-                //     network: "config.aptos.network",
-                //     chainId: "config.aptos.chainId"
-                // }
-            };
-
-            const strategy = 'CALLBACK';
-
-            try {
-                const core = trustwallet.core(strategy, (params) => {
-                     // Disabled methods
-                    if (params.name === 'wallet_requestPermissions') {
-                        core.sendResponse(params.id, null);
-                        return;
-                    }
-                    if(window.flutter_inappwebview.callHandler) {
-                      // @params - eg. {id: 0, name: 'signMessage', object: { chainId: 56 }, network: 'BSC'}
-                      window.flutter_inappwebview.callHandler('_tw_', params)
-                    }
-                });
-
-                // Generate instances
-                const ethereum = trustwallet.ethereum(config.ethereum);
-                // const solana = trustwallet.solana(config.solana);
-                // const cosmos = trustwallet.cosmos();
-                // const aptos = trustwallet.aptos(config.aptos);
-                // const ton = trustwallet.ton();
-
-                const walletInfo = {
-                  deviceInfo: {
-                    platform: 'iphone',
-                    appName: 'flutterwallet',
-                    appVersion: "0.0.1",
-                    maxProtocolVersion: 2,
-                    features: [
-                      'SendTransaction',
-                      {
-                        name: 'SendTransaction',
-                        maxMessages: 4,
-                      },
-                    ],
-                  },
-                  walletInfo: {
-                    name: 'Trust',
-                    image: 'https://assets-cdn.trustwallet.com/dapps/trust.logo.png',
-                    about_url: 'https://trustwallet.com/about-us',
-                  },
-                  isWalletBrowser: true,
-                };
-
-                // const tonBridge = trustwallet.tonBridge(walletInfo, ton);
-
-                // core.registerProviders([ethereum, solana, cosmos, aptos, ton].map(provider => {
-                core.registerProviders([ethereum].map(provider => {
-                  provider.sendResponse = core.sendResponse.bind(core);
-                  provider.sendError = core.sendError.bind(core);
-                  return provider;
-                }));
-
-                // window.trustwalletTon = { tonconnect: tonBridge, provider: ton };
-
-                // Custom methods
-                ethereum.emitChainChanged = (chainId) => {
-                  ethereum.setChainId('0x' + parseInt(chainId || '1').toString(16));
-                  ethereum.emit('chainChanged', ethereum.getChainId());
-                  ethereum.emit('networkChanged', parseInt(chainId || '1'));
-                };
-
-                ethereum.setConfig = (config) => {
-                  ethereum.setChainId('0x' + parseInt(config.ethereum.chainId || '1').toString(16));
-                  ethereum.setAddress(config.ethereum.address);
-                  if (config.ethereum.rpcUrl) {
-                    ethereum.setRPCUrl(config.ethereum.rpcUrl);
-                  }
-                };
-                // End custom methods
-
-                // cosmos.mode = 'extension';
-                // cosmos.providerNetwork = 'cosmos';
-                // cosmos.isKeplr = true;
-                // cosmos.version = "0.12.106";
-
-                // cosmos.enable = (chainIds)  => {
-                //   console.log(`==> enabled for \${chainIds}`);
-                // };
-
-                // Attach to window
-                trustwallet.ethereum = ethereum;
-                // trustwallet.solana = solana;
-                // trustwallet.cosmos = cosmos;
-                // trustwallet.TrustCosmos = trustwallet.cosmos;
-                // trustwallet.aptos = aptos;
-                // trustwallet.ton = ton;
-
-                window.ethereum = trustwallet.ethereum;
-                // window.keplr = trustwallet.cosmos;
-                // window.aptos = trustwallet.aptos;
-                // window.ton = trustwallet.ton;
-
-                // const getDefaultCosmosProvider = (chainId) => {
-                //   return trustwallet.cosmos.getOfflineSigner(chainId);
-                // };
-
-                // window.getOfflineSigner = getDefaultCosmosProvider;
-                // window.getOfflineSignerOnlyAmino = getDefaultCosmosProvider;
-                // window.getOfflineSignerAuto = getDefaultCosmosProvider;
-
-                Object.assign(window.trustwallet, {
-                  isTrust: true,
-                  isTrustWallet: true,
-                  request: ethereum.request.bind(ethereum),
-                  send: ethereum.send.bind(ethereum),
-                  on: (...params) => ethereum.on(...params),
-                  off: (...params) => ethereum.off(...params),
-                });
-
-                const provider = ethereum;
-                const proxyMethods = ['chainId', 'networkVersion', 'address', 'enable', 'send'];
-
-                // Attach properties to trustwallet object (legacy props)
-                const proxy = new Proxy(window.trustwallet, {
-                  get(target, prop, receiver) {
-                    if (proxyMethods.includes(prop)) {
-                      switch (prop) {
-                        case 'chainId':
-                          return ethereum.getChainId.bind(provider);
-                        case 'networkVersion':
-                          return ethereum.getNetworkVersion.bind(provider);
-                        case 'address':
-                          return ethereum.getAddress.bind(provider);
-                        case 'enable':
-                          return ethereum.enable.bind(provider);
-                        case 'send':
-                          return ethereum.send.bind(provider);
-                      }
-                    }
-
-                    return Reflect.get(target, prop, receiver);
-                  },
-                });
-
-                window.trustwallet = proxy;
-
-                const EIP6963Icon =
-                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTgiIGhlaWdodD0iNjUiIHZpZXdCb3g9IjAgMCA1OCA2NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgOS4zODk0OUwyOC44OTA3IDBWNjUuMDA0MkM4LjI1NDUgNTYuMzM2OSAwIDM5LjcyNDggMCAzMC4zMzUzVjkuMzg5NDlaIiBmaWxsPSIjMDUwMEZGIi8+CjxwYXRoIGQ9Ik01Ny43ODIyIDkuMzg5NDlMMjguODkxNSAwVjY1LjAwNDJDNDkuNTI3NyA1Ni4zMzY5IDU3Ljc4MjIgMzkuNzI0OCA1Ny43ODIyIDMwLjMzNTNWOS4zODk0OVoiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8yMjAxXzY5NDIpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMjIwMV82OTQyIiB4MT0iNTEuMzYxNSIgeTE9Ii00LjE1MjkzIiB4Mj0iMjkuNTM4NCIgeTI9IjY0LjUxNDciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agb2Zmc2V0PSIwLjAyMTEyIiBzdG9wLWNvbG9yPSIjMDAwMEZGIi8+CjxzdG9wIG9mZnNldD0iMC4wNzYyNDIzIiBzdG9wLWNvbG9yPSIjMDA5NEZGIi8+CjxzdG9wIG9mZnNldD0iMC4xNjMwODkiIHN0b3AtY29sb3I9IiM0OEZGOTEiLz4KPHN0b3Agb2Zmc2V0PSIwLjQyMDA0OSIgc3RvcC1jb2xvcj0iIzAwOTRGRiIvPgo8c3RvcCBvZmZzZXQ9IjAuNjgyODg2IiBzdG9wLWNvbG9yPSIjMDAzOEZGIi8+CjxzdG9wIG9mZnNldD0iMC45MDI0NjUiIHN0b3AtY29sb3I9IiMwNTAwRkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K';
-
-                const info = {
-                  uuid: crypto.randomUUID(),
-                  name: 'Trust Wallet',
-                  icon: EIP6963Icon,
-                  rdns: 'com.trustwallet.app',
-                };
-
-                const announceEvent = new CustomEvent('eip6963:announceProvider', {
-                  detail: Object.freeze({ info, provider: ethereum }),
-                });
-
-                window.dispatchEvent(announceEvent);
-
-                window.addEventListener('eip6963:requestProvider', () => {
-                   window.dispatchEvent(announceEvent);
-                });
-            } catch (e) {
-              console.error(e)
-            }
-        })();
-        """;
-    return source;
-  }
-
-  // ignore: unused_element
-  String _loadInitJsForAndroid(int chainId, String rpcUrl) {
-    String source = """
-        (function() {
-            var config = {
-                ethereum: {
-                    chainId: $chainId,
-                    rpcUrl: "$rpcUrl"
-                },
-                // solana: {
-                //     cluster: "mainnet-beta",
-                // },
-                isDebug: true
-            };
-            trustwallet.ethereum = new trustwallet.Provider(config);
-            // trustwallet.solana = new trustwallet.SolanaProvider(config);
-            trustwallet.postMessage = (json) => {
-                // @json - eg. {id: 0, name: 'signMessage', object: { chainId: 56 }, network: 'BSC'}
-                window.flutter_inappwebview.callHandler('_tw_', json)
-            }
-            window.ethereum = trustwallet.ethereum;
-        })();
-    """;
-    return source;
-  }
-
-  String _loadReInt(int chainId, String rpcUrl, String address) {
-    if (Platform.isIOS) {
-      return _loadInitJsForIOS(chainId, rpcUrl, address);
-    } else if (Platform.isAndroid) {
-      return _loadInitJsForIOS(chainId, rpcUrl, address);
-      // return _loadInitJsForAndroid(chainId, rpcUrl);
-    } else {
-      return '';
-    }
-  }
-
-  String _loadInitJs(int chainId, String rpcUrl) {
-    if (Platform.isIOS) {
-      return _loadInitJsForIOS(chainId, rpcUrl, '');
-    } else if (Platform.isAndroid) {
-      return _loadInitJsForIOS(chainId, rpcUrl, '');
-      // return _loadInitJsForAndroid(chainId, rpcUrl);
-    } else {
-      return '';
-    }
   }
 
   // 减号
@@ -546,10 +309,13 @@ class DappWebPageSatae extends State<DappWebPage> {
     // Add implementation
   }
 
-  void handleSignTransaction(JsCallbackModel jsData) {
+  Future<void> handleSignTransaction(JsCallbackModel jsData) async {
     // _sendResult(controller, "ethereum", "signedData", jsData.id);
-    _controllerWebView.tw
-        .sendResponse(ProviderNetwork.ethereum, 'signedData', jsData.id);
+    final privateKey = await widget.onSignPermit();
+    // TODO: implement signEthTransaction
+    var signedData = await TokenHelper.signEthTransaction(privateKey, '');
+    final network = ProviderNetworkExtension.fromString(jsData.network);
+    _controllerWebView.tw.sendResponse(network, signedData, jsData.id);
   }
 
   void handleSignMessage(Map<String, dynamic> json) {
@@ -568,11 +334,11 @@ class DappWebPageSatae extends State<DappWebPage> {
   Future<void> handleSignPersonalMessage(Map<String, dynamic> json) async {
     try {
       JsDataModel data = JsDataModel.fromJson(jsData.object);
+      final privateKey = await widget.onSignPermit();
       var signedData =
-          await TokenHelper.signPersonalMessage(widget.privateKey, data.data);
-      // _sendResult(controller, "ethereum", signedData, jsData.id);
-      _controllerWebView.tw
-          .sendResponse(ProviderNetwork.ethereum, signedData, jsData.id);
+          await TokenHelper.signPersonalMessage(privateKey, data.data);
+      final network = ProviderNetworkExtension.fromString(jsData.network);
+      _controllerWebView.tw.sendResponse(network, signedData, jsData.id);
     } catch (e) {
       print(e);
     }
@@ -588,17 +354,41 @@ class DappWebPageSatae extends State<DappWebPage> {
     // Add implementation
   }
 
-  void handleRequestAccounts(Map<String, dynamic> json) {
+  void handleRequestAccounts(JsCallbackModel jsData) {
     showScreenView(
         context,
         390,
         DappApproveView(
-          dappdismiss: (value) {
+          dappdismiss: (value) async {
             if (value == 1) {
-              widget.dappViewController.requestAccounts();
+              // widget.dappViewController.requestAccounts();
+              try {
+                // fetch current wallet
+                if (_provider.useOldVersion) {
+                  final network =
+                      ProviderNetworkExtension.fromString(jsData.network);
+                  await _controllerWebView.tw.set(network, address);
+                  await _controllerWebView.tw
+                      .sendArrayResponse(network, [address], jsData.id);
+                  await _controllerWebView.tw.setOldConfig(
+                    Config(
+                      ethereum: widget.config.ethereum,
+                    ),
+                  );
+                } else {
+                  final network =
+                      ProviderNetworkExtension.fromString(jsData.network);
+                  await _controllerWebView.tw.set(network, address);
+                  await _controllerWebView.tw
+                      .sendArrayResponse(network, [address], jsData.id);
+                }
+                print("授权登录");
+              } catch (e) {
+                debugPrint(e.toString());
+              }
             }
           },
-          model: widget.dappModel,
+          model: dappModel,
         ));
   }
 

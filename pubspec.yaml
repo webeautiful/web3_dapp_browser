@@ -23,4 +23,5 @@ flutter:
   assets:
     - packages/web3_dapp_browser/assets/js/android-web3-provider.min.js
     - packages/web3_dapp_browser/assets/js/ios-web3-provider.min.js
+    - packages/web3_dapp_browser/assets/js/provider.min.js
     - packages/web3_dapp_browser/assets/js/custom.js

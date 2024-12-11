@@ -18,11 +18,26 @@ extension WebViewFunctions on TypeWrapper<InAppWebViewController> {
   /// 设置网络和地址
   Future<void> set(ProviderNetwork network, String address) async {
     final script =
-        'trustwallet.${network.name}.setAddress("${address.toLowerCase()}");';
+        'window.${network.name}.setAddress("${address.toLowerCase()}");';
     await _valuateJavascript(source: script);
   }
 
   /// 设置配置信息
+  Future<void> setOldConfig(trust_web3_provider.Config config) async {
+    final script = """
+    var config = {
+        ethereum: {
+            address: "${config.ethereum.address}",
+            chainId: ${config.ethereum.chainId},
+            rpcUrl: "${config.ethereum.rpcUrl}",
+            isDebug: true,
+        }
+    };
+    window.ethereum.setNetwork(config);
+    """;
+    await _valuateJavascript(source: script);
+  }
+
   Future<void> setConfig(trust_web3_provider.Config config) async {
     final script = """
     var config = {
@@ -32,7 +47,7 @@ extension WebViewFunctions on TypeWrapper<InAppWebViewController> {
             rpcUrl: "${config.ethereum.rpcUrl}"
         }
     };
-    ethereum.setConfig(config);
+    window.ethereum.setConfig(config);
     """;
     await _valuateJavascript(source: script);
   }
@@ -40,13 +55,13 @@ extension WebViewFunctions on TypeWrapper<InAppWebViewController> {
   /// 触发链切换事件
   Future<void> emitChange(int chainId) async {
     final hexChainId = '0x${chainId.toRadixString(16)}';
-    final script = 'trustwallet.ethereum.emitChainChanged("$hexChainId");';
+    final script = 'window.ethereum.emitChainChanged("$hexChainId");';
     await _valuateJavascript(source: script);
   }
 
   /// 发送错误响应
   Future<void> sendError(ProviderNetwork network, String error, int id) async {
-    final script = 'trustwallet.${network.name}.sendError($id, "$error");';
+    final script = 'window.${network.name}.sendError($id, "$error");';
     await _valuateJavascript(source: script);
   }
 
@@ -54,13 +69,13 @@ extension WebViewFunctions on TypeWrapper<InAppWebViewController> {
   Future<void> sendResponse(
       ProviderNetwork network, String result, int requestId) async {
     final script =
-        "trustwallet.${network.name}.sendResponse($requestId, '$result');";
+        "window.${network.name}.sendResponse($requestId, '$result');";
     await _valuateJavascript(source: script);
   }
 
   /// 发送空结果响应
   Future<void> sendNullResponse(ProviderNetwork network, int id) async {
-    final script = "trustwallet.${network.name}.sendResponse($id, null);";
+    final script = "window.${network.name}.sendResponse($id, null);";
     await _valuateJavascript(source: script);
   }
 
@@ -68,8 +83,7 @@ extension WebViewFunctions on TypeWrapper<InAppWebViewController> {
   Future<void> sendArrayResponse(
       ProviderNetwork network, List<String> results, int id) async {
     final encodedArray = results.map((result) => '"$result"').join(',');
-    final script =
-        "trustwallet.${network.name}.sendResponse($id, [$encodedArray]);";
+    final script = "window.${network.name}.sendResponse($id, [$encodedArray]);";
     await _valuateJavascript(source: script);
   }
 
